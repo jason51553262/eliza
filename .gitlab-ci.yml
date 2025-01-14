@@ -1,0 +1,4 @@
+include:
+  - project: 'infra/gitlab-ci-util'
+    ref: master
+    file: '/templates/docker-image.yml'
