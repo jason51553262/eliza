@@ -1,6 +1,6 @@
 import { type Context, Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { type IAgentRuntime, elizaLogger } from "@elizaos/core";
+import { type IAgentRuntime, elizaLogger, parseBooleanFromText } from "@elizaos/core";
 import { MessageManager } from "./messageManager.ts";
 import { getOrCreateRecommenderInBe } from "./getOrCreateRecommenderInBe.ts";
 
@@ -11,6 +11,7 @@ export class TelegramClient {
     private backend;
     private backendToken;
     private tgTrader;
+    private disableErrorCtxReply;
     private options;
 
     constructor(runtime: IAgentRuntime, botToken: string) {
@@ -26,6 +27,8 @@ export class TelegramClient {
         this.backend = runtime.getSetting("BACKEND_URL");
         this.backendToken = runtime.getSetting("BACKEND_TOKEN");
         this.tgTrader = runtime.getSetting("TG_TRADER"); // boolean To Be added to the settings
+        this.disableErrorCtxReply = runtime.getSetting("TELEGRAM_DISABLE_ERROR_CTX_REPLY")
+            || parseBooleanFromText(process.env.TELEGRAM_DISABLE_ERROR_CTX_REPLY);
         elizaLogger.log("✅ TelegramClient constructor completed");
     }
 
@@ -140,9 +143,11 @@ export class TelegramClient {
                 // Don't try to reply if we've left the group or been kicked
                 if (error?.response?.error_code !== 403) {
                     try {
-                        await ctx.reply(
-                            "An error occurred while processing your message."
-                        );
+                        if(!this.disableErrorCtxReply) {
+                            await ctx.reply(
+                                "An error occurred while processing your message."
+                            );
+                        }
                     } catch (replyError) {
                         elizaLogger.error(
                             "Failed to send error message:",
@@ -169,7 +174,9 @@ export class TelegramClient {
 
         this.bot.catch((err, ctx) => {
             elizaLogger.error(`❌ Telegram Error for ${ctx.updateType}:`, err);
-            ctx.reply("An unexpected error occurred. Please try again later.");
+            if(!this.disableErrorCtxReply) {
+                ctx.reply("An unexpected error occurred. Please try again later.");
+            }
         });
     }
 
@@ -197,7 +204,7 @@ export class TelegramClient {
 
     public async stop(): Promise<void> {
         elizaLogger.log("Stopping Telegram bot...");
-        //await 
+        //await
             this.bot.stop();
         elizaLogger.log("Telegram bot stopped");
     }
