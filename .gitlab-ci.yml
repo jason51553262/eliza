@@ -1,4 +1,4 @@
 include:
-  - project: 'infra/gitlab-ci-util'
-    ref: master
-    file: '/templates/docker-image.yml'
+    - project: 'infra/gitlab-ci-util'
+      ref: master
+      file: '/templates/raasify-images.gitlab-ci.yml'
