@@ -1,6 +1,6 @@
-import { Context, Telegraf } from "telegraf";
+import { type Context, Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
-import { IAgentRuntime, elizaLogger, parseBooleanFromText } from "@elizaos/core";
+import { type IAgentRuntime, elizaLogger, parseBooleanFromText } from "@elizaos/core";
 import { MessageManager } from "./messageManager.ts";
 import { getOrCreateRecommenderInBe } from "./getOrCreateRecommenderInBe.ts";
 
